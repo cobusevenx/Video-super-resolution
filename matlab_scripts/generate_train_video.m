@@ -1,7 +1,6 @@
 clear; close all;
 
 %% Configuration 
-% NOTE: you can modify this part
 train_set = 'train';
 scale = 3;
 hr_size = 48;

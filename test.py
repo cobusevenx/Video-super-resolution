@@ -20,23 +20,11 @@ args = parser.parse_args()
 
 
 def get_full_path(scale, test_set):
-    """
-    Get full path of data based on configs and target path
-    example: data/interpolation/test/set5/3x
-    """
+
     scale_path = str(scale) + 'x'
     return os.path.join('preprocessed_data/test', test_set, scale_path)
     
-def display_config():
-    print('############################################################')
-    print('# Video Super Resolution - Pytorch implementation          #')
-    print('# by Thang Vu (thangvubk@gmail.com                         #')
-    print('############################################################')
-    print('')
-    print('-------YOUR SETTINGS_________')
-    for arg in vars(args):
-        print("%15s: %s" %(str(arg), str(getattr(args, arg))))
-    print('')
+
 
 def export(scale, model_name, stats, outputs):
         path = os.path.join('results', model_name, 

@@ -30,23 +30,11 @@ parser.add_argument('-v', '--verbose', dest='verbose', action='store_true',
 args = parser.parse_args()
 
 def get_full_path(scale, train_set):
-    """
-    Get full path of data based on configs and target path
-    example: data/interpolation/test/set5/3x
-    """
+
     scale_path = str(scale) + 'x'
     return os.path.join('preprocessed_data', train_set, scale_path)
     
-def display_config():
-    print('############################################################')
-    print('# Video Super Resolution - Pytorch implementation          #')
-    print('# by Thang Vu (thangvubk@gmail.com)                        #')
-    print('############################################################')
-    print('')
-    print('-------YOUR SETTINGS_________')
-    for arg in vars(args):
-        print("%15s: %s" %(str(arg), str(getattr(args, arg))))
-    print('')
+
 
 
 def main():
@@ -54,7 +42,7 @@ def main():
 
     dataset_root = get_full_path(args.scale, args.train_set)
 
-    print('Contructing dataset...')
+    print('Constructing dataset...')
     dataset_factory = DatasetFactory()
     train_dataset  = dataset_factory.create_dataset(args.model,
                                                     dataset_root)

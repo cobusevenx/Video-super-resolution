@@ -14,39 +14,9 @@ import os
 import time
 
 class Solver(object):
-    """
-    A Solver encapsulates all the logic necessary for training super resolution
-    The Solver accepts both training and validation data label so it can 
-    periodically check the PSNR on training
-    
-    To train a model, you will first construct a Solver instance, pass the model,
-    datasets, and various option (optimizer, loss_fn, batch_size, etc) to the
-    constructor.
 
-    After train() method is called. The best model is saved into 'check_point' dir, which is used
-    for the testing time. 
-
-    For statistics, 'loss' history, 'avr_train_psnr' history
-    are also saved. 
-    """
     def __init__(self, model, check_point, **kwargs):
-        """
-        Construct a new Solver instance
 
-        Required arguments
-        - model: a torch nn module describe the neural network architecture
-        - check_point: save trained model for testing for finetuning
-
-        Optional arguments:
-        - num_epochs: number of epochs to run during training
-        - batch_size: batch size for train phase
-        - optimizer: update rule for model parameters
-        - loss_fn: loss function for the model
-        - fine_tune: fine tune the model in check_point dir instead of training 
-                     from scratch
-        - verbose: print training information
-        - print_every: period of statistics printing
-        """
         self.model = model
         self.check_point = check_point
         self.num_epochs = kwargs.pop('num_epochs', 10)
@@ -64,7 +34,6 @@ class Solver(object):
         self._reset()
 
     def _reset(self):
-        """ Initialize some book-keeping variable, dont call it manually"""
         self.use_gpu = torch.cuda.is_available()
         if self.use_gpu:
             self.model = self.model.cuda()
@@ -73,7 +42,6 @@ class Solver(object):
         self.hist_loss = []
     
     def _epoch_step(self, dataset, epoch):
-        """ Perform 1 training 'epoch' on the 'dataset'"""
         dataloader = DataLoader(dataset, batch_size=self.batch_size,
                                 shuffle=True, num_workers=4)
 
@@ -111,8 +79,7 @@ class Solver(object):
         average_loss = running_loss/num_batchs
         self.hist_loss.append(average_loss)
         if self.verbose:
-            print('Epoch  %5d, loss %.5f' \
-                        %(epoch, average_loss))
+            pass
 
     def _wrap_variable(self, input_batch, label_batch, use_gpu):
         if use_gpu:
@@ -124,7 +91,6 @@ class Solver(object):
         return input_batch, label_batch
     
     def _comput_PSNR(self, imgs1, imgs2):
-        """Compute PSNR between two image array and return the psnr summation"""
         N = imgs1.size()[0]
         imdiff = imgs1 - imgs2
         imdiff = imdiff.view(N, -1)
@@ -134,13 +100,6 @@ class Solver(object):
         return psnr
 
     def _check_PSNR(self, dataset, is_test=False):
-        """
-        Get the output of model with the input being 'dataset' then 
-        compute the PSNR between output and label.
-        
-        if 'is_test' is True, psnr and output of each image is also 
-        return for statistics and generate output image at test phase
-        """
 
         # process one image per iter for test phase
         if is_test:
@@ -220,7 +179,7 @@ class Solver(object):
             raise Exception('Cannot find %s.' %model_path)
         elif self.fine_tune and os.path.exists(model_path):
             if self.verbose:
-                print('Loading %s for finetuning.' %model_path)
+                pass
             self.model = torch.load(model_path)
             self.optimizer = optim.Adam(self.model.parameters(), lr=self.learning_rate)
         
@@ -233,17 +192,13 @@ class Solver(object):
             self._epoch_step(train_dataset, epoch)
             self.scheduler.step()
 
-            if self.verbose:
-                print('Computing PSNR...')
+
 
             # capture running PSNR on train and val dataset
             train_psnr, train_ssim, _, _ = self._check_PSNR(train_dataset)
             self.hist_train_psnr.append(train_psnr)
             
-            if self.verbose:
-                print('%s Average train PSNR:%.3fdB average ssim: %.3f' %(self.model.name, 
-                    train_psnr, train_ssim))
-                print('')
+
             
         # write the model to hard-disk for testing
         if not os.path.exists(self.check_point):
